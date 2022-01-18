@@ -13,20 +13,24 @@ select_covariates = {
     'Dec No Lick (report)';
     
      %get_enhance_supp_alter2
-    'Sample CW'
-    'Sample CCW'
-    'Sample CW NM';
-    'Sample CW M';
+%     'Sample CW'
+%     'Sample CCW'
+
     
 
    
     'Speed';
         
     'Reward';
-    'CW Enh Test Firing Rate';
-    'CW Sup Test Firing Rate';
-    'CCW Enh Test Firing Rate';
-    'CCW Sup Test Firing Rate'};
+    
+    'CW CW E Fir Rate';
+    'CW CCW E Fir Rate';
+    'CCW CCW E Fir Rate';
+    'CCW CW E Fir Rate';
+    'CW CW S Fir Rate';
+    'CW CCW S Fir Rate';
+    'CCW CCW S Fir Rate';
+    'CCW CW S Fir Rate'};
 
 
 %% USER - task factors defined.  strings must match
@@ -34,9 +38,16 @@ taskfactor = {
 %     'Direction', {'Stim CW', 'Stim CCW'};     
     'Sample ED', {'Cue CW (ED)', 'Cue CCW (ED)'};   
     'Sample LD', {'Cue CW (LD)'; 'Cue CCW (LD)'};
-
-    'Stimulus',{'Sample CW NM'; 'Sample CW M';'CW Enh Test Firing Rate';'CW Sup Test Firing Rate';'CCW Enh Test Firing Rate';'CCW Sup Test Firing Rate'};
-        
+% 
+%     'Stimulus',{'Sample CW'; 'Sample CCW';'CW NM T E Fir Rate';'CW M T E Fir Rate';'CCW NM T E Fir Rate';'CCW M T E Fir Rate';
+%     'CCW NM T S Fir Rate';'CW NM T S Fir Rate';'CCW M T S Fir Rate';'CCW NM T S Fir Rate'};
+%     
+    'M Sup',{'CW CW S Fir Rate';'CCW CCW S Fir Rate'};
+    'M Enh',{'CW CW E Fir Rate';'CCW CCW E Fir Rate'};
+    'NM Sup',{'CW CCW S Fir Rate';'CCW CW S Fir Rate'};
+    'NM Enh',{'CW CCW E Fir Rate';'CCW CW E Fir Rate'};
+  
+    
     'Stim Speed',{'Speed'};
     'Reward',{'Reward'};
     'Decision report', {'Dec Lick (report)', 'Dec No Lick (report)'}

@@ -1,20 +1,26 @@
-function [CW_Enh,CW_Sup,CCW_Enh,CCW_Sup] = get_test_fir(trial, eventvec,ca,samprate)
+function [CW_Enh_T_M,CW_Enh_T_NM,CCW_Enh_T_M,CCW_Enh_T_NM] = get_test_fir(trial, eventvec,ca,samprate)
+% This function will return the test firing rate instead of ones
 
-% CW Enh Test Firing Rate
-% CW Sup Test Firing Rate
-% CCW Enh Test Firing Rate
-% CCW Sup Test Firing Rate
 
-CW2 = strcmp(trial.direction_2(1:end-3),'CW');
+% CW M T E Fir Rate
+% CW NM T E Fir Rate
+% CCW M T E Fir Rate
+% CCW NM T E Fir Rate
+
+CW1 = strcmp(trial.direction_1,'CW 40');
+
+CW2 = strcmp(trial.direction_2,'CW 40');
+CCW2 = strcmp(trial.direction_2,'CCW 40');
+
 times = find(eventvec);
 empty = zeros(1, length(eventvec));
 test = empty;
 test(times(7):times(8)-1) = 1;
-firing_sum = sum(ca(:,times(7):times(7)+round(samprate)),2)+0.01;
+firing_sum = sum(ca(:,times(7):times(7)+round(samprate)),2)+0.001;
 
 
-CW_Enh= test.*firing_sum*CW2;
-CW_Sup = test.*firing_sum*CW2;
-CCW_Enh = test.*firing_sum*(1-CW2);
-CCW_Sup = test.*firing_sum*(1-CW2);
+CW_Enh_T_M= test.*firing_sum*CW2*CW1;
+CW_Enh_T_NM = test.*firing_sum*CW2*(1-CW1);
+CCW_Enh_T_M = test.*firing_sum*CCW2*(1-CW1);
+CCW_Enh_T_NM = test.*firing_sum*CCW2*CW1;
 end

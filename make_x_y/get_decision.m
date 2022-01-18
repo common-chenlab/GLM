@@ -1,4 +1,4 @@
-function tempdecs = get_decision(trial, eventvec, eventKey)
+function tempdecs = get_decision(trial, eventvec)
 
 % 'Dec Lick (Pre)';
 % 'Dec Lick (Stim)';
@@ -16,12 +16,23 @@ function tempdecs = get_decision(trial, eventvec, eventKey)
 is_Lick = strcmp(trial.decision,'Hit')|strcmp(trial.decision,'FA');
 is_No_lick = strcmp(trial.decision,'Miss')|strcmp(trial.decision,'CR');
 
-is_Hit = strcmp(trial.decision,'Hit');
-is_Miss = strcmp(trial.decision,'Miss');
-is_FA = strcmp(trial.decision,'FA');
-is_CR = strcmp(trial.decision,'CR');
+%define time periods of trial. 
+times = find(eventvec);
+empty = zeros(1, length(eventvec));
+Pre = empty;
+Cue = empty;
+Early_delay = empty;
+Late_delay = empty;
+Target = empty;
+Report = empty; 
 
-[Pre, Cue, Early_delay, Late_delay, ~, Target, Report] = get_times(eventvec, eventKey);
+%time-period boxcars
+Pre(times(1):times(3)-1) = 1;
+Cue(times(3):times(4)-1) = 1;
+Early_delay(times(4):times(6)-1) = 1;
+Late_delay(times(6):times(7)-1) = 1;
+Target(times(7):times(8)-1) = 1;
+Report(times(8):times(9)) = 1;
 
 tempdecs = [Pre*is_Lick;...
             Cue*is_Lick;...
@@ -34,9 +45,4 @@ tempdecs = [Pre*is_Lick;...
             Early_delay*is_No_lick;...
             Late_delay*is_No_lick;...
             Target*is_No_lick;...
-            Report*is_No_lick;...
-            Target * is_Hit + Report * is_Hit;...
-            Target * is_Miss + Report * is_Miss;...
-            Target * is_FA + Report * is_FA;...
-            Target * is_CR + Report * is_CR;...
-            ];
+            Report*is_No_lick];

@@ -1,4 +1,4 @@
-function [bigStruct, Y, X,  ROI_list_Ca1, ROI_list_Ca2, trial_info,test_firing_rate] = make_x_y(anm, datmat, directory, includeWhisker,denoise)
+function [bigStruct, Y, X,  ROI_list_Ca1, ROI_list_Ca2, trial_info,test_firing_rate] = make_x_y_test(anm, datmat, directory, includeWhisker,denoise)
 % David Lee
 % Last update: 6/17/19
 
@@ -25,11 +25,12 @@ function [bigStruct, Y, X,  ROI_list_Ca1, ROI_list_Ca2, trial_info,test_firing_r
 addpath('Z:\Dropbox\Chen Lab Dropbox\Chen Lab Team Folder\Projects\CRACK\software\e_GLM-1\Generate Covariates')
 
 if nargin == 0
-    anm = 'cc034';
-    datmat = 'cc034-6.mat';
-    directory = 'Z:\Dropbox\Dropbox\Chen Lab Team Folder\Projects\CRACK\Animals\';
-    includeWhisker = 1;
-    denoise = 0;
+    directory = 'Z:\Dropbox\Dropbox\Chen Lab Team Folder\Projects\Connectomics\Animals\';
+    anm = 'jc105';
+    datmat = 'jc105-19';
+   
+    includeWhisker = 0;
+    denoise = 1;
 %     selectROIlist = {};
 end
 denoise_frameLost = 30; % frame lost before and after, from deeplearning denoisng
@@ -109,6 +110,10 @@ stack_test_fr_Ca_CW_nm = [];
 stack_test_fr_Ca_CCW_m = [];
 stack_test_fr_Ca_CCW_nm = [];
 
+stack_smp_tst_cwcw = {};
+stack_smp_tst_cwccw = {};
+stack_smp_tst_ccwcw = {};
+stack_smp_tst_ccwccw = {};
 
 for c1ti = 1:length(cal.trial_info)
     trialName = cal.trial_info{c1ti}.mat_file(4:end-4);
@@ -299,6 +304,7 @@ for c1ti = 1:length(cal.trial_info)
             Ca1 = bigStruct(bS).Ca1_spikes;
             times = find(eventvec);
             
+            [sample_test]=get_samp_test_fr(trials(trialnum), eventvec,Ca1,samprate);
             temp_fr_sample = sum(Ca1(:,times(3):times(3)+round(samprate)),2);
             temp_fr_test = sum(Ca1(:,times(7):times(7)+round(samprate)),2); 
             if areano == 2
@@ -307,21 +313,29 @@ for c1ti = 1:length(cal.trial_info)
                 testfirrateCa2 = sum(Ca2(:,times(7):times(7)+round(samprate)),2);
                 temp_fr_sample = [temp_fr_sample;samplefirrateCa2];
                 temp_fr_test = [temp_fr_test;testfirrateCa2];
+                
+                [sample_test_tmp,firingrate]=get_samp_test_fr(trials(trialnum), eventvec,Ca2,samprate);
+                sample_test = [sample_test;sample_test_tmp];
+                                
             end
-            
+
             if strcmp(stim1, 'CW 40')                
                 stack_sample_fr_Ca_CW = [stack_sample_fr_Ca_CW,temp_fr_sample];
                 if strcmp(stim2, 'CW 40') 
                     stack_test_fr_Ca_CW_m = [stack_test_fr_Ca_CW_m,temp_fr_test];
+                    stack_smp_tst_cwcw{end+1} = sample_test;
                 elseif strcmp(stim2, 'CCW 40') 
                     stack_test_fr_Ca_CCW_nm = [stack_test_fr_Ca_CCW_nm,temp_fr_test];
+                    stack_smp_tst_cwccw{end+1} = sample_test;
                 end
             elseif strcmp(stim1, 'CCW 40')
                 stack_sample_fr_Ca_CCW = [stack_sample_fr_Ca_CCW,temp_fr_sample];
                 if strcmp(stim2, 'CW 40') 
                     stack_test_fr_Ca_CW_nm = [stack_test_fr_Ca_CW_nm,temp_fr_test];
+                    stack_smp_tst_ccwcw{end+1} = sample_test;
                 elseif strcmp(stim2, 'CCW 40') 
                     stack_test_fr_Ca_CCW_m = [stack_test_fr_Ca_CCW_m,temp_fr_test];
+                    stack_smp_tst_ccwccw{end+1} = sample_test;
                 end
             end
             %% build X matrix for each trial - USER DEFINED
@@ -344,6 +358,7 @@ for c1ti = 1:length(cal.trial_info)
             end
             
 %             tempenhsup = get_enhance_supp(trials(trialnum),eventvec); tempX = [tempX; tempenhsup]; % create enhance and suppression matrix
+% 
 %             tempenhsup_alt = get_enhance_supp_alter(trials(trialnum),eventvec); tempX = [tempX; tempenhsup_alt]; % create enhance and suppression matrix
 %             tempenhsup_alt2 = get_enhance_supp_alter2(trials(trialnum),eventvec); tempX = [tempX; tempenhsup_alt2]; % create enhance and suppression matrix
 %                         
@@ -359,10 +374,10 @@ for c1ti = 1:length(cal.trial_info)
             [tempTestCW_M,tempTestCW_NM,tempTestCCW_M,tempTestCCW_NM] = get_test_fir(trials(trialnum),eventvec,Ca1,samprate); 
             if areano == 2
                 [tempTestCW_M1,tempTestCW_NM1,tempTestCCW_M1,tempTestCCW_NM1] = get_test_fir(trials(trialnum),eventvec,Ca2,samprate); 
-                tempTestCW_M = [tempTestCW_M(:,start_trim+1:end-end_trim); tempTestCW_M1(:,start_trim+1:end-end_trim)]; % create enhance and suppression matrix
-                tempTestCW_NM = [tempTestCW_NM(:,start_trim+1:end-end_trim); tempTestCW_NM1(:,start_trim+1:end-end_trim)]; % create enhance and suppression matrix
-                tempTestCCW_M = [tempTestCCW_M(:,start_trim+1:end-end_trim); tempTestCCW_M1(:,start_trim+1:end-end_trim)]; % create enhance and suppression matrix
-                tempTestCCW_NM = [tempTestCCW_NM(:,start_trim+1:end-end_trim); tempTestCCW_NM1(:,start_trim+1:end-end_trim)]; % create enhance and suppression matrix
+                tempTestCW_M = [tempTestCW_M; tempTestCW_M1]; % create enhance and suppression matrix
+                tempTestCW_NM = [tempTestCW_NM; tempTestCW_NM1]; % create enhance and suppression matrix
+                tempTestCCW_M = [tempTestCCW_M; tempTestCCW_M1]; % create enhance and suppression matrix
+                tempTestCCW_NM = [tempTestCCW_NM; tempTestCCW_NM1]; % create enhance and suppression matrix
             end
             bigStruct(bS).FR_test = {tempTestCW_M,tempTestCW_NM,tempTestCCW_M,tempTestCCW_NM};
 
@@ -390,7 +405,7 @@ mean_sampe_fr_Ca_CW = mean(stack_sample_fr_Ca_CW,2);
 bigStruct(1).Firingrate_Sample_CW = mean_sampe_fr_Ca_CW;
 mean_sampe_fr_Ca_CCW = mean(stack_sample_fr_Ca_CCW,2);
 bigStruct(1).Firingrate_Sample_CCW = mean_sampe_fr_Ca_CCW;
-
+tempsave = {stack_smp_tst_ccwccw,stack_smp_tst_ccwcw,stack_smp_tst_cwccw,stack_smp_tst_cwcw};
 %% make bigX and bigY
 X = [];
 Y = [];
