@@ -1,42 +1,50 @@
-function run_GLM_session(directory, anm, session, plotfigure, ROI_list,Project,includeWhisker,denoise,plot_whiskers,coupling,enhsup)
+function run_GLM_session(directory, anm, session, plotfigure, ROI_list,Project,includeWhisker,denoise,plot_whiskers,coupling,baseline_flag,covStruct)
 
 if nargin == 0
-    directory = 'Z:\Dropbox\Dropbox\Chen Lab Team Folder\Projects\Connectomics\Animals\';
+    directory = 'Z:/Dropbox/Dropbox/Chen Lab Team Folder/Projects/Connectomics/Animals/';
     anm = 'jc105';
     session = 'jc105-19';
     plotfigure = 1;
-%     ROI_list = {'jc105-19-A1-0145','jc105-19-A1-0109'};
+    %     ROI_list = {'jc105-19-A1-0145','jc105-19-A1-0109'};
     ROI_list = {'jc105-19-A1-0145','jc105-19-A1-0109'};
-% ROI_list = {'jc105-18-A1-0059'};
+    % ROI_list = {'jc105-18-A1-0059'};
     Project = 'Connectomics';
     includeWhisker = 0;
     coupling = 0;
     denoise = 1;
     plot_whiskers = 0;
     enhsup =  1;
+    baseline_flag = 0;
+    load('Z:\Dropbox\Dropbox\Chen Lab Team Folder\Analysis Suite\Secondary Analysis\GLM\General\test.mat','covStruct');
+
 end
 
-
-saved_day = convertStringsToChars(string(datetime('now','TimeZone','local','Format','_MMM_d_y_HH')));
-
-
 %% add paths
-addpath(genpath('Z:\Dropbox\Chen Lab Dropbox\Chen Lab Team Folder\Analysis Suite\Secondary Analysis\GLM\General\'));
+% addpath(genpath('Z:/Dropbox/Chen Lab Dropbox/Chen Lab Team Folder/Analysis Suite/Secondary Analysis/GLM/General/'));
+if isunix
+    ZDRIVE = '/net/claustrum/mnt/data/';
+elseif ispc
+    ZDRIVE = 'Z:/';
+end
 
 %% THESE TWO FUNCTIONS NEED TO BE CUSTOMIZED
 if strcmp(Project,'CRACK')
     [all_covariates, select_covariates, covariates_subidx, taskfactor] = define_covariate_factor_idx_CRACK();
     [bigStruct, Y, X, ROI_list_Ca1, ROI_list_Ca2, trial_info] = make_x_y(anm, session, directory, includeWhisker,denoise);
-
+    
 elseif strcmp(Project,'Connectomics')
-    [all_covariates, select_covariates, covariates_subidx, taskfactor] = define_covariate_factor_idx_Connectomics();
-    [bigStruct, Y, X, ROI_list_Ca1, ROI_list_Ca2, trial_info,test_firing_rate] = make_x_y(anm, session, directory, includeWhisker,denoise);
-
+    [all_covariates, select_covariates, covariates_subidx, taskfactor] = define_covariate_factor_idx_Connectomics(covStruct);
+    [bigStruct, Y, X, ROI_list_Ca1, ROI_list_Ca2, trial_info] = make_x_y_Connectomics(anm, session, directory, includeWhisker,denoise);
+    
 elseif strcmp(Project,'Perirhinal')
-    load('Z:/Dropbox/Chen Lab Dropbox/Chen Lab Team Folder/Projects/Perirhinal/Animals/covStruct.mat')
+    load([ ZDRIVE 'Dropbox/Chen Lab Dropbox/Chen Lab Team Folder/Projects/Perirhinal/Animals/covStruct.mat'])
     [all_covariates, select_covariates, covariates_subidx, taskfactor] = define_covariate_factor_idx_PRH(covStruct);
     [bigStruct, Y, X, ROI_list_Ca1, ROI_list_Ca2, trial_info] = make_x_y_PRH(anm, session, directory, includeWhisker,denoise);
+    
+end
 
+if ~exist('modelName','var')
+    modelName = convertStringsToChars(string(datetime('now','TimeZone','local','Format','MMM_d_y_HH')));
 end
 
 coupling = any(contains(select_covariates,'coupling'));
@@ -92,10 +100,19 @@ end
 %%
 
 if isempty(master_list) == 0
+    if baseline_flag == 1
+        X = X(covariates_subidx(1:end-1-coupling),:); %select sub X, no coupling added yet
+        baseline = sum(X,1);
+        baseline(baseline>0) = 1;
+        baseline = 1-baseline;
+        X = [X;baseline];
+    else
+        X = X(covariates_subidx(1:end-coupling),:); %select sub X, no coupling added yet
+    end
+
     
-    X = X(covariates_subidx(1:end-coupling-enhsup*4),:); %select sub X, no coupling added yet
     proceed = 1;
-    for kki = 1:length(master_list)  %% all the ROIs
+    parfor kki = 1:length(master_list)  %% all the ROIs
         proceed = 0;
         caughterror = 0;
         if isempty(ROI_list) == 1
@@ -108,20 +125,20 @@ if isempty(master_list) == 0
             NrnNum{kki} = master_idx(kki, 2);
             cellid{kki} =  master_list{kki};
             
-            disp([master_list{kki} ' running' num2str(kki)]);
+            disp([master_list{kki} ' running: ROI ' num2str(kki)]);
             
             yt = Y(kki,:); % select yt
             tempX = X;
-            if enhsup
-                Sample_FR_mean_CW = bigStruct(1).Firingrate_Sample_CW(kki)+0.01;
-                Sample_FR_mean_CCW = bigStruct(1).Firingrate_Sample_CCW(kki)+0.01;
-                tempTestCW_Enh = test_firing_rate{1}(kki,:)>Sample_FR_mean_CW;
-                tempTestCW_Sup = (test_firing_rate{2}(kki,:)<Sample_FR_mean_CW).*(test_firing_rate{2}(kki,:)>0);
-                tempTestCCW_Enh = test_firing_rate{3}(kki,:)>Sample_FR_mean_CCW;
-                tempTestCCW_Sup = (test_firing_rate{4}(kki,:)<Sample_FR_mean_CCW).*(test_firing_rate{4}(kki,:)>0);
-                tempX = [tempX;tempTestCW_Enh;tempTestCW_Sup;tempTestCCW_Enh;tempTestCCW_Sup];    
-            
-            end
+            %             if enhsup
+            %                 Sample_FR_mean_CW = bigStruct(1).Firingrate_Sample_CW(kki)+0.01;
+            %                 Sample_FR_mean_CCW = bigStruct(1).Firingrate_Sample_CCW(kki)+0.01;
+            %                 tempTestCW_Enh = test_firing_rate{1}(kki,:)>Sample_FR_mean_CW;
+            %                 tempTestCW_Sup = (test_firing_rate{2}(kki,:)<Sample_FR_mean_CW).*(test_firing_rate{2}(kki,:)>0);
+            %                 tempTestCCW_Enh = test_firing_rate{3}(kki,:)>Sample_FR_mean_CCW;
+            %                 tempTestCCW_Sup = (test_firing_rate{4}(kki,:)<Sample_FR_mean_CCW).*(test_firing_rate{4}(kki,:)>0);
+            %                 tempX = [tempX;tempTestCW_Enh;tempTestCW_Sup;tempTestCCW_Enh;tempTestCCW_Sup];
+            %
+            %             end
             %% add coupling if necessary
             if coupling == 1
                 tempX = get_NMF(tempX, Y, kki, 1);
@@ -133,10 +150,19 @@ if isempty(master_list) == 0
             try
                 tempout = run_full_model(master_list{kki}, master_idx(kki, 2), master_idx(kki, 1), numLambda, nCV, tempX', yt);
                 disp([master_list{kki} ' finish full model']);
-
+                
                 [tempout, caughterror] = run_partial_model(tempout, tempX', yt, numLambda, nCV, taskfactor); % run partial model and LLR
                 disp([master_list{kki} ' finish partial model']);
-                tempout.saveloc = [directory,anm,'\GLM_plots\plots',saved_day,'\'];
+                %                 tempout.saveloc = [directory,anm,'/GLM_plots/plots',saved_day,'/'];
+                if isunix
+                    tempout.saveloc = [ZDRIVE,'Projects',filesep, Project, filesep ,'Animals', filesep...
+                        ,anm,'/GLM_plots' filesep modelName filesep session filesep];     
+                else
+                    tempout.saveloc = [directory,anm,'/GLM_plots/' modelName filesep session filesep];
+                end
+                if  ~exist(tempout.saveloc, 'dir')
+                    mkdir(tempout.saveloc)
+                end
                 %% store results
                 wreg2{kki} = tempout.wreg2;
                 stats2{kki} = tempout.stats2;
@@ -160,7 +186,7 @@ if isempty(master_list) == 0
                     align_to = 'direction_1_time';
                     plot_GLM_fit_wo_partial(tempout,trial_info, select_covariates, taskfactor, align_to);
                     disp([master_list{kki} ' finish partial plot']);
-
+                    
                 end
                 disp([master_list{kki} ' successful']);
             catch
@@ -213,11 +239,18 @@ for counter = 1:length(wreg2)
     
 end
 
-%%
+%% TODO
+% change the saving direction if necessary
+if isunix
+    savedirection = [ZDRIVE 'Projects' filesep Project filesep 'Animals' filesep anm filesep];
+else
+    savedirection = [directory anm  filesep 'GLM_Models' filesep modelName filesep session filesep];
+end
+if  ~exist(savedirection, 'dir')
+    mkdir(savedirection)
+end
+save([savedirection session '_GLM_' modelName '.mat'] ,'out', 'all_covariates', 'select_covariates', 'covariates_subidx', 'taskfactor','bigStruct');
 
-save([directory anm, '\GLM_' session saved_day '.mat'] ,'out', 'all_covariates', 'select_covariates', 'covariates_subidx', 'taskfactor','bigStruct');
-% save([directory anm, '\GLM_' session] ,'covariates','taskfactor','-append');
+% save([directory anm, '/GLM_' session] ,'covariates','taskfactor','-append');
 
 end
-
-

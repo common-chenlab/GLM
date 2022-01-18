@@ -4,7 +4,7 @@ function [bigStruct, Y, X,  ROI_list_Ca1, ROI_list_Ca2, trial_info,checkvariable
 
 % Change log:
 
-%12/17/19 - cam - added CCD_idx check to account for missing CCD files 
+%12/17/19 - cam - added CCD_idx check to account for missing CCD files
 %12/10/19 - CAM added delta_curve and curve fields to bigStruct, added output
 % variable 'complete whisker trials' that contains the trial numbers of all
 % trials with complete whisker data.
@@ -22,7 +22,14 @@ function [bigStruct, Y, X,  ROI_list_Ca1, ROI_list_Ca2, trial_info,checkvariable
 % Name of file to import & parse
 
 %functions path
-addpath('Z:\Dropbox\Chen Lab Dropbox\Chen Lab Team Folder\Projects\CRACK\software\e_GLM-1\Generate Covariates')
+if isunix
+    addpath('/net/claustrum/mnt/data/Dropbox/Chen Lab Dropbox/Chen Lab Team Folder/Projects/CRACK/software/e_GLM-1/Generate Covariates')
+    if ~contains(datmat,'.mat')
+        datmat = [datmat '.mat'];
+    end
+elseif ispc
+    addpath('Z:\Dropbox\Chen Lab Dropbox\Chen Lab Team Folder\Projects\CRACK\software\e_GLM-1\Generate Covariates')
+end
 
 if nargin == 0
     anm = 'cc034';
@@ -30,14 +37,14 @@ if nargin == 0
     directory = 'Z:\Dropbox\Dropbox\Chen Lab Team Folder\Projects\CRACK\Animals\';
     includeWhisker = 1;
     denoise = 0;
-%     selectROIlist = {};
+    %     selectROIlist = {};
 end
 denoise_frameLost = 30; % frame lost before and after, from deeplearning denoisng
 D = load([directory anm filesep datmat]);
 trials = D.trials;
 summary = D.summary;
 
-start_trim = 0; 
+start_trim = 0;
 end_trim = 40;
 
 
@@ -87,19 +94,24 @@ bigStruct = struct('trialID', [], 'Ca1_spikes',[],'Ca2_spikes',[],'timevec',[],.
 %     'def_shift',def_shift);
 
 % Events and numbers referring to each event (used in timevec)
+% Name of field in trials struct which contains event timestamp
 eventKey = {'begin','present_time','direction_1_time',...
     'delay_time','delay_withdraw_time','delay_present_time','direction_2_time',...
-    'report_time','reward_time','withdraw_time'};
+    'report_time','reward_time','decision_time','withdraw_time','end_time'};
+
+% Automatically number each of these events
 eKnum = num2cell(1:length(eventKey));
+
+% Readable description of each event
 eKdesc = {'Trial Start','Present','Direction 1 Start','Delay',...
     'Delay Withdraw','Delay Present','Direction 2 Start','Report',...
-    'Reward','Withdraw'};
+    'Reward','Decision','Withdraw','Trial End'};
 bigStruct.eventKey = {eventKey{:}; eKnum{:}; eKdesc{:}};
 
 
 bS = 1; % bigStruct index
 checkvariable = [];
-   
+
 for c1ti = 1:length(cal.trial_info)
     trialName = cal.trial_info{c1ti}.mat_file(4:end-4);
     proceed = 0;
@@ -108,7 +120,7 @@ for c1ti = 1:length(cal.trial_info)
     if areano == 2
         if any(contains(cal2_matfiles,trialName))
             sRow = find(contains(matlist,trialName),1,'last'); % Row in summary table containing trial info
-            if isempty(sRow) == 0                
+            if isempty(sRow) == 0
                 proceed = 1;
             else
                 proceed = 0;
@@ -116,9 +128,9 @@ for c1ti = 1:length(cal.trial_info)
         else
             proceed = 0;
         end
-    else        
+    else
         sRow = find(contains(matlist,trialName),1,'last'); % Row in summary table containing trial info
-        if isempty(sRow) == 0 
+        if isempty(sRow) == 0
             proceed = 1;
         end
     end
@@ -190,6 +202,7 @@ for c1ti = 1:length(cal.trial_info)
             
             sRow = find(contains(matlist,trialName),1,'last'); % Row in summary table containing trial info
             if isempty(sRow)
+                disp(['Could not find ' trialName ' in Summary Table'])
                 continue
             end
             
@@ -202,11 +215,15 @@ for c1ti = 1:length(cal.trial_info)
                 endtime = endtime-denoise_frameLost/samprate*1000; % in ms, 30 frames before the denoise
             end
             Ca_offset = endtime-length(Ca1_spikes(1,:))*1000/samprate; %in ms (starts of 2p or denois(2p) when trial starts = 0sec
-
-            offset_threshold = trials(trialnum).present_time;
+            
+            offset_threshold = trials(trialnum).direction_1_time;
             withdraw_time = trials(trialnum).withdraw_time;
             
-            if Ca_offset > offset_threshold || endtime < withdraw_time  %make sure Ca_spike contains present_time and withdraw
+            if Ca_offset > offset_threshold   %make sure Ca_spike contains present_time and withdraw
+                disp(['Trial index ' num2str(c1ti) ': ' trialName ' Ca_offset > offset_threshold'])
+                continue
+            elseif endtime < withdraw_time
+                disp(['Trial index ' num2str(c1ti) ': ' trialName ' endtime < withdraw_time'])
                 continue
             end
             
@@ -214,11 +231,17 @@ for c1ti = 1:length(cal.trial_info)
                 Ca_offset = Ca_offset-denoise_frameLost/samprate*1000; %in ms, 30 frames after the denoise
             end
             
-
+            if any(any(isnan(Ca1_spikes))) || any(any(isnan(Ca2_spikes)))
+                disp(['Found NaN in trial A0_' trialName])
+                continue
+            elseif any(any(isnan(Ca2_spikes)))
+                disp(['Found NaN in trial A1_' trialName])
+                continue
+            end
             
             bigStruct(bS).trialID = uint16(trialnum);
             
-            %% set up trial type and response vectors for plotting later. 
+            %% set up trial type and response vectors for plotting later.
             %THIS WILL NEED TO BE UPDATED FOR NON DNMS TASKS
             
             %trial types:
@@ -233,7 +256,7 @@ for c1ti = 1:length(cal.trial_info)
             %3 = CR
             %4 = Miss
             
-            trial_type_key = {'CW:CW', 'CW:CCW', 'CCW:CW', 'CCW:CCW'}; 
+            trial_type_key = {'CW:CW', 'CW:CCW', 'CCW:CW', 'CCW:CCW'};
             decision_key = {'Hit', 'FA', 'CR', 'Miss'};
             
             stim1 = trials(trialnum).direction_1(1:end-3);
@@ -254,40 +277,41 @@ for c1ti = 1:length(cal.trial_info)
             r = find(strcmp(decision_key,dec));
             bigStruct(bS).decision = r;
             %% build calcium data for trial - NEEDS TO BE UPDATED
-            bigStruct(bS).A0_idx = summary.table{sRow,5};           
-            bigStruct(bS).trialNameCa1 = cal.trial_info{c1ti}.mat_file;                        
+            bigStruct(bS).A0_idx = summary.table{sRow,5};
+            bigStruct(bS).trialNameCa1 = cal.trial_info{c1ti}.mat_file;
             Ca1 = Ca1_spikes; % Cut off extra samples so all vectors have same length
-            bigStruct(bS).Ca1_spikes = single(Ca1);            
-     
+            bigStruct(bS).Ca1_spikes = single(Ca1);
+            
             if areano == 2
                 Ca2 = Ca2_spikes;
                 bigStruct(bS).Ca2_spikes = single(Ca2);
-                bigStruct(bS).A1_idx = summary.table{sRow,7};                
+                bigStruct(bS).A1_idx = summary.table{sRow,7};
             end
             
             %% Create time vector - NEEDS TO BE UPDATED
-%             record_time_samples = round(trials(trialnum).recording_time/1000*Ca.sampling_rate);
-%             timevec = (0:samps-1)/samprate * 1000; % use ms for time unit
+            %             record_time_samples = round(trials(trialnum).recording_time/1000*Ca.sampling_rate);
+            %             timevec = (0:samps-1)/samprate * 1000; % use ms for time unit
             timevec = (0:length(Ca1_spikes(1,:))-1)/samprate * 1000; % use ms for time unit, 2p timvec
             if denoise
                 timevec = timevec+denoise_frameLost/samprate*1000;
             end
-%             timevec = Ca_offset:1000/samprate:endtime; % trial timevec
-%             timevec = timevec(1:end-1); %trial timevec
+            %             timevec = Ca_offset:1000/samprate:endtime; % trial timevec
+            %             timevec = timevec(1:end-1); %trial timevec
             eventvec = generateEventVector(timevec,trials(trialnum),bigStruct(1).eventKey,Ca_offset);
             bigStruct(bS).timevec = single([timevec;eventvec]);
             
-%             %DEBUG
-%             debugsave(trialnum,1) = Ca_offset;
-%             debugsave(trialnum,2) = endtime;
-%             debugsave(trialnum,3) = length(eventvec);
-%             %DEBUG
+            %             %DEBUG
+            %             debugsave(trialnum,1) = Ca_offset;
+            %             debugsave(trialnum,2) = endtime;
+            %             debugsave(trialnum,3) = length(eventvec);
+            %             %DEBUG
             %% build X matrix for each trial - USER DEFINED
-                       
-            tempX = []; 
-            tempstims = get_stimvectors(trials(trialnum), eventvec); tempX = [tempX; tempstims];  % create stim matrix
-              tempcats = get_category(trials(trialnum),eventvec); tempX = [tempX; tempcats]; % create category matrix
-            tempdecs = get_decision(trials(trialnum),eventvec); tempX = [tempX; tempdecs]; % create decision matrix
+            
+            tempX = [];
+            tempstims = get_stimvectors(trials(trialnum), eventvec, bigStruct(1).eventKey); tempX = [tempX; tempstims];  % create stim matrix
+            tempcats = get_category(trials(trialnum),eventvec, bigStruct(1).eventKey); tempX = [tempX; tempcats]; % create category matrix
+            tempdecs = get_decision(trials(trialnum),eventvec, bigStruct(1).eventKey); tempX = [tempX; tempdecs]; % create decision matrix
+            temptouch = get_touchtimes(eventvec, bigStruct(1).eventKey, samprate); tempX = [tempX; temptouch]; % create touch onset/offset
             
             if lick_exist  % create lick vector
                 templicks = get_lickvector(licks, trialnum, Ca_offset, timevec); tempX = [tempX; templicks];
@@ -301,26 +325,26 @@ for c1ti = 1:length(cal.trial_info)
                 tempwhisks =NaN*ones(8,length(eventvec)); tempX = [tempX; tempwhisks];
             end
             
-            tempenhsup = get_enhance_supp(trials(trialnum),eventvec); tempX = [tempX; tempenhsup]; % create enhance and suppression matrix
-
-            tempenhsup_alt = get_enhance_supp_alter(trials(trialnum),eventvec); tempX = [tempX; tempenhsup_alt]; % create enhance and suppression matrix
-            tempenhsup_alt2 = get_enhance_supp_alter2(trials(trialnum),eventvec); tempX = [tempX; tempenhsup_alt2]; % create enhance and suppression matrix
-
+            %             tempenhsup = get_enhance_supp(trials(trialnum),eventvec); tempX = [tempX; tempenhsup]; % create enhance and suppression matrix
+            %
+            %             tempenhsup_alt = get_enhance_supp_alter(trials(trialnum),eventvec); tempX = [tempX; tempenhsup_alt]; % create enhance and suppression matrix
+            %             tempenhsup_alt2 = get_enhance_supp_alter2(trials(trialnum),eventvec); tempX = [tempX; tempenhsup_alt2]; % create enhance and suppression matrix
             
-            tempspeed = get_speed_vector(trials(trialnum),eventvec); tempX = [tempX; tempspeed]; % create speed matrix
+            
+            tempspeed = get_speed_vector(trials(trialnum),eventvec, bigStruct(1).eventKey); tempX = [tempX; tempspeed]; % create speed matrix
             tempreward=get_reward_vector(trials(trialnum),timevec,Ca_offset); tempX = [tempX; tempreward]; % create reward matrix
             %%
             bigStruct(bS).X = tempX; % store X matrix for trial
             
             bS = bS + 1;  % Increment structure index
             
-           
+            
         elseif c1col < minlen || c2col < minlen  % Make a note and skip the data if more than one sample is missing
             disp(['Ignoring Trial ' num2str(c1ti) '. Trial is too short.'])
         else
             disp(['Large discrepancy in F_dF size, ignoring trial: ' trialName])
             disp(['Ca1: ' num2str(c1col) '; Ca2: ' num2str(c2col)])
-            disp(' ')        
+            disp(' ')
         end
         % Make a note if a trial is missing in the second calcium dataset
     else
@@ -347,6 +371,7 @@ for i = 1:length(bigStruct)
         trial_end_indices(i) = trial_end_indices(i-1) + size(bigStruct(i).X(:,start_trim+1:end-end_trim),2);
     end
     temp = bigStruct(i).Ca1_spikes;
+
     if areano == 2
         temp = [temp; bigStruct(i).Ca2_spikes];
     end

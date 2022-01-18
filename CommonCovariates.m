@@ -48,39 +48,39 @@ output = {'Stim CW';
     'W setpt';
     'W curve change';
     
-%     'M Enh CW';  %get_enhance_supp
-%     'M Enh CCW';
-%     'NM Enh CW';
-%     'NM Enh CCW';
-%     'M Sup CW';
-%     'M Sup CCW';
-%     'NM Sup CW';
-%     'NM Sup CCW';
-%     
-%     'CW Sample';  %get_enhance_supp_alter
-%     'CCW Sample';
-%     'CW Test Enh M';
-%     'CW Test Sup M';
-%     'CW Test Remain M';
-%     'CCW Test Enh M';
-%     'CCW Test Sup M';
-%     'CCW Test Remain M';
-%     'CW Test Enh NM';
-%     'CW Test Sup NM';
-%     'CW Test Remain NM';
-%     'CCW Test Enh NM';
-%     'CCW Test Sup NM';
-%     'CCW Test Remain NM';
+    'M Enh CW';  %get_enhance_supp
+    'M Enh CCW';
+    'NM Enh CW';
+    'NM Enh CCW';
+    'M Sup CW';
+    'M Sup CCW';
+    'NM Sup CW';
+    'NM Sup CCW';
+    
+    'CW Sample';  %get_enhance_supp_alter
+    'CCW Sample';
+    'CW Test Enh M';
+    'CW Test Sup M';
+    'CW Test Remain M';
+    'CCW Test Enh M';
+    'CCW Test Sup M';
+    'CCW Test Remain M';
+    'CW Test Enh NM';
+    'CW Test Sup NM';
+    'CW Test Remain NM';
+    'CCW Test Enh NM';
+    'CCW Test Sup NM';
+    'CCW Test Remain NM';
     
     
-%     'Sample CW';  %get_enhance_supp_alter2
-%     'Sample CCW';
-%     'Sample CW NM';
-%     'Sample CW M';
-%     'Test CW NM';
-%     'Test CCW NM';
-%     'Test CW M';
-%     'Test CCW M';
+    'Sample CW';  %get_enhance_supp_alter2
+    'Sample CCW';
+    'Sample CW NM';
+    'Sample CW M';
+    'Test CW NM';
+    'Test CCW NM';
+    'Test CW M';
+    'Test CCW M';
     
     'Speed';
     'Cue Speed (sample)';
@@ -89,13 +89,9 @@ output = {'Stim CW';
     'Cue Speed (test)';
     'Reward';
     
-    'CW CW E Fir Rate';
-    'CW CCW E Fir Rate';
-    'CCW CCW E Fir Rate';
-    'CCW CW E Fir Rate';
-    'CW CW S Fir Rate';
-    'CW CCW S Fir Rate';
-    'CCW CCW S Fir Rate';
-    'CCW CW S Fir Rate'
+    'CW Enh Test Firing Rate';
+    'CW Sup Test Firing Rate';
+    'CCW Enh Test Firing Rate';
+    'CCW Sup Test Firing Rate';
     
     'coupling'};
