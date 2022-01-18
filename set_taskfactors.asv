@@ -1,0 +1,66 @@
+function [out, exclude, caughterror] = set_taskfactors(out, X, yt, numLambda, nCV, include_whisker, include_NMF, whisk_touch, whisk_kinematics_included)
+
+%% PARTIAL MODEL SUB FUNCTION
+%Key
+        
+        %Stim CW:1
+        %Stim CCW:2
+        %Cue CW (ED):3
+        %Cue CW (LD):4
+        %Cue CCW (ED):5
+        %Cue CCW (LD):6
+        %Cat M (T): 7
+        %Cat M (R):8
+        %Cat NM (T):9
+        %Cat NM (R):10
+        %Dec Lick (T):11
+        %Dec Lick (R):12
+        %Dec No Lick (T):13
+        %Dec No Lick (R):14
+        %W touch on:15
+        %W touch off : 16
+        %W angle:17
+        %W recon:18
+        %W phase:19
+        %W amp:20
+        %W setpt:21
+        %W curve change: 22
+        
+        num_touch_params = length(find(whisk_touch));
+        num_kinematics_params = length(find(whisk_kinematics_included));
+        num_whisk_params = num_touch_params + num_kinematics_params;
+       
+        %specify pairs of non-whisk covariates to drop together (based on
+        %key above)        
+        exclude = [1,2; 3,5; 4,6; 7,9; 8,10; 11,13; 12,14; size(X,2),NaN]; %last is NMF
+        dofs = [];
+        for i = 1:size(exclude,1)    %partial model
+            dofs = [dofs, length(temp_exclude)];
+        end
+        
+        if include_whisker              %partial models, excluding whisker covariates
+            
+            %exclude whisk touch first                                        
+            temp(:,end-(num_whisk_params+include_NMF)+1:end-(num_kinematics_params + include_NMF)) = [];
+            dofs = num_touch_params;
+              
+            
+            %exclude kinematics
+            try 
+                temp = X;
+                temp(:,end-(num_kinematics_params+include_NMF) + 1 :end-include_NMF) = [];
+                [wreg1{size(exclude,1) + 2}, stats1{size(exclude,1) + 2}] = lassoglm_test(temp, yt, ...
+                            'poisson', 'numlambda', numLambda, 'cv', nCV, 'MaxIter',2e3);
+                dof = num_kinematics_params;
+                dev1 = stats1{size(exclude,1) + 2}.Deviance(stats1{size(exclude,1) + 2}.IndexMinDeviance);
+                storedev1(size(exclude,1) + 2) = dev1;
+                dAIC(size(exclude,1) + 2) = 2*(dof) + dev1 - out.dev2;
+                pval(size(exclude,1) + 2) = 1 - chi2cdf(dev1 - out.dev2,  dof);
+            catch 
+                disp('partial model caught error in whisk kinematics partial model, max iter reached');
+                caughterror = 1;
+            end
+        end
+
+end 
+
