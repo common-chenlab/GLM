@@ -1,11 +1,13 @@
 # GLM_chen_lab
 create your own copy of define_covariate_factor_idx for your project
-sample: 'define_covariate_factor_idx_CRACK'
+
+sample: 'define_covariate_factor_idx_CRACK or define_covariate_factor_idx_Connectomics'
 
 
 User Manual:
 1. clone the codes.
-2. run_GLM_session(directory, anm, session, plotfigure, ROI_list,Project,includeWhisker,denoise,plot_whiskers,coupling,enhsup)
+2. run demo_GLM -- this is a demo use one connectomics data, estimate running time ~20min
+3. run_GLM_session(directory, anm, session, plotfigure, ROI_list,Project,includeWhisker,denoise,plot_whiskers,coupling,enhsup) -- customize for your own dataset
     
     1. 'directory/anm/session': directory for raw data
     2. ROI_list: leave it empty if you don't have specific neurons to cover, or in this format: {'neuron1','neuron2'}
