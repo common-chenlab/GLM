@@ -8,7 +8,7 @@ User Manual:
 2. run_GLM_session(directory, anm, session, plotfigure, ROI_list,Project,includeWhisker,denoise,plot_whiskers,coupling,enhsup)
     
     1. 'directory/anm/session': directory for raw data
-    2. ROI_list: leave it empty if you don't have specific neurons to cover, or {'jc105-19-A1-0145','jc105-19-A1-0109'}
+    2. ROI_list: leave it empty if you don't have specific neurons to cover, or in this format: {'neuron1','neuron2'}
     3. Project = 'Connectomics';% find TODO Project and add your project and your define_covariate_factor_idx
     4. includeWhisker = 0; % 1 if you have whisker data
     5. coupling = 0; %1 if you want include coupling,(ref [Dense functional and molecular readout of a circuit hub in sensory cortex](https://www.science.org/doi/10.1126/science.abl5981))
