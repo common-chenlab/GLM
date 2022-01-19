@@ -14,6 +14,5 @@ User Manual:
     5. coupling = 0; %1 if you want include coupling,(ref [Dense functional and molecular readout of a circuit hub in sensory cortex](https://www.science.org/doi/10.1126/science.abl5981))
     6. denoise = 1; %1 if your raw data has been preprocessed by the deepinterpolation
     7. plot_whiskers = 0;
-    8. enhsup =  0;  %only 1 if your data has a enhance suppression case, (ref [Context dependent sensory processing across primary and secondary  
-    somatosensory cortex](https://www.sciencedirect.com/science/article/pii/S0896627320301033))
+    8. enhsup =  0;  %only 1 if your data has a enhance suppression case, (ref [Context dependent sensory processing across primary and secondary somatosensory cortex](https://www.sciencedirect.com/science/article/pii/S0896627320301033))
     
