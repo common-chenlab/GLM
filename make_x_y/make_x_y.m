@@ -328,10 +328,7 @@ for c1ti = 1:length(cal.trial_info)
                 tempwhisks =NaN*ones(8,length(eventvec)); tempX = [tempX; tempwhisks];
             end
             
-            tempenhsup = get_enhance_supp(trials(trialnum),eventvec); tempX = [tempX; tempenhsup]; % create enhance and suppression matrix
 
-            tempenhsup_alt = get_enhance_supp_alter(trials(trialnum),eventvec); tempX = [tempX; tempenhsup_alt]; % create enhance and suppression matrix
-            tempenhsup_alt2 = get_enhance_supp_alter2(trials(trialnum),eventvec); tempX = [tempX; tempenhsup_alt2]; % create enhance and suppression matrix
                         
             tempspeed = get_speed_vector(trials(trialnum),eventvec); tempX = [tempX; tempspeed]; % create speed matrix
             tempreward=get_reward_vector(trials(trialnum),timevec,Ca_offset); tempX = [tempX; tempreward]; % create reward matrix
