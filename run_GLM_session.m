@@ -24,6 +24,7 @@ saved_day = convertStringsToChars(string(datetime('now','TimeZone','local','Form
 addpath(genpath('Z:\Dropbox\Chen Lab Dropbox\Chen Lab Team Folder\Analysis Suite\Secondary Analysis\GLM\General\'));
 
 %% THESE TWO FUNCTIONS NEED TO BE CUSTOMIZED
+% TODO Project
 if strcmp(Project,'CRACK')
     [all_covariates, select_covariates, covariates_subidx, taskfactor] = define_covariate_factor_idx_CRACK();
     [bigStruct, Y, X, ROI_list_Ca1, ROI_list_Ca2, trial_info] = make_x_y(anm, session, directory, includeWhisker,denoise);
