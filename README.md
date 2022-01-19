@@ -9,7 +9,7 @@ User Manual:
     
     1. 'directory/anm/session': directory for raw data
     2. ROI_list: leave it empty if you don't have specific neurons to cover, or in this format: {'neuron1','neuron2'}
-    3. Project = 'Connectomics';% find TODO Project and add your project and your define_covariate_factor_idx
+    3. Project = 'CRACK';% find TODO Project and add your project and your define_covariate_factor_idx
     4. includeWhisker = 0; % 1 if you have whisker data
     5. coupling = 0; %1 if you want include coupling,(ref [Dense functional and molecular readout of a circuit hub in sensory cortex](https://www.science.org/doi/10.1126/science.abl5981))
     6. denoise = 1; %1 if your raw data has been preprocessed by the deepinterpolation
