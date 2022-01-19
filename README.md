@@ -4,7 +4,7 @@ sample: 'define_covariate_factor_idx_CRACK'
 
 
 User Manual:
-1. Go to practice (main) directory and clone the codes.
+1. clone the codes.
 2. run_GLM_session(directory, anm, session, plotfigure, ROI_list,Project,includeWhisker,denoise,plot_whiskers,coupling,enhsup)
     
     1. 'directory/anm/session': directory for raw data
