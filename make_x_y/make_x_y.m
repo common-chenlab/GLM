@@ -22,18 +22,13 @@ function [bigStruct, Y, X,  ROI_list_Ca1, ROI_list_Ca2, trial_info,test_firing_r
 % Name of file to import & parse
 
 %functions path
+% TODO
 addpath('Z:\Dropbox\Chen Lab Dropbox\Chen Lab Team Folder\Projects\CRACK\software\e_GLM-1\Generate Covariates')
 
-if nargin == 0
-    anm = 'cc034';
-    datmat = 'cc034-6.mat';
-    directory = 'Z:\Dropbox\Dropbox\Chen Lab Team Folder\Projects\CRACK\Animals\';
-    includeWhisker = 1;
-    denoise = 0;
-%     selectROIlist = {};
-end
+
 denoise_frameLost = 30; % frame lost before and after, from deeplearning denoisng
 D = load([directory anm filesep datmat]);
+% D = load('demo.mat')
 trials = D.trials;
 summary = D.summary;
 
@@ -175,7 +170,9 @@ for c1ti = 1:length(cal.trial_info)
             if denoise
                 Ca2_spikes = cal2.deconv_REF{contains(cal2_matfiles,trialName)};
             else
+                try
                 Ca2_spikes = cal2.deconv{contains(cal2_matfiles,trialName)};
+                end
             end
             [~, c2col] = size(Ca2_spikes);
         else
