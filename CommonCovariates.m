@@ -55,14 +55,6 @@ output = {'Stim CW';
     'Cue Speed (LD)';
     'Cue Speed (test)';
     'Reward';
-    
-    'CW CW E Fir Rate';
-    'CW CCW E Fir Rate';
-    'CCW CCW E Fir Rate';
-    'CCW CW E Fir Rate';
-    'CW CW S Fir Rate';
-    'CW CCW S Fir Rate';
-    'CCW CCW S Fir Rate';
-    'CCW CW S Fir Rate'
+
     
     'coupling'};

@@ -1,27 +1,24 @@
 function run_GLM_session(directory, anm, session, plotfigure, ROI_list,Project,includeWhisker,denoise,plot_whiskers,coupling,enhsup)
 
 if nargin == 0
-    directory = 'Z:\Dropbox\Dropbox\Chen Lab Team Folder\Projects\Connectomics\Animals\';
-    anm = 'jc105';
-    session = 'jc105-19';
+    directory =pwd;
+    anm ='';
+    session = 'cc034-4';
     plotfigure = 1;
-%     ROI_list = {'jc105-19-A1-0145','jc105-19-A1-0109'};
-    ROI_list = {'jc105-19-A1-0145','jc105-19-A1-0109'};
-% ROI_list = {'jc105-18-A1-0059'};
-    Project = 'Connectomics';
-    includeWhisker = 0;
-    coupling = 0;
-    denoise = 1;
+    ROI_list = {'cc034-4-A0-0016-temp','cc034-4-A0-0029-temp','cc034-4-A0-0034-temp','cc034-4-A0-0063-temp','cc034-4-A0-0001-draw','cc034-4-A0-0004-draw',...
+        'cc034-4-A0-0005-draw','cc034-4-A0-0008-draw','cc034-4-A0-0014-draw','cc034-4-A0-0017-draw','cc034-4-A0-0018-draw','cc034-4-A0-0020-draw','cc034-4-A0-0021-draw',...
+        'cc034-4-A0-0022-draw','cc034-4-A0-0023-draw','cc034-4-A0-0025-draw','cc034-4-A1-0030-temp','cc034-4-A1-0052-temp','cc034-4-A1-0120-temp','cc034-4-A1-0002-draw','cc034-4-A1-0007-draw'};
+    Project = 'CRACK';
+    includeWhisker = 1;
+    coupling = 1;
+    denoise = 0;
     plot_whiskers = 0;
-    enhsup =  1;
+    enhsup =  0;
 end
 
 
 saved_day = convertStringsToChars(string(datetime('now','TimeZone','local','Format','_MMM_d_y_HH')));
 
-
-%% add paths
-addpath(genpath('Z:\Dropbox\Chen Lab Dropbox\Chen Lab Team Folder\Analysis Suite\Secondary Analysis\GLM\General\'));
 
 %% THESE TWO FUNCTIONS NEED TO BE CUSTOMIZED
 % TODO Project
