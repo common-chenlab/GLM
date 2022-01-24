@@ -1,4 +1,9 @@
 # GLM_chen_lab
+prerequisite: your matlab has following toolbox:
+1. Curve fitting
+2. Signal Processing
+3. Statistics and Machine Learning
+
 create your own copy of define_covariate_factor_idx for your project
 
 User Manual:
