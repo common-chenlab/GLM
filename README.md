@@ -4,7 +4,7 @@ create your own copy of define_covariate_factor_idx for your project
 User Manual:
 1. clone the codes.
 2. copy paste cc034 from [here](https://doi.gin.g-node.org/10.12751/g-node.7q0lz0/) to the same folder as the code
-3. unzip cc034-4_whisker.rar
+3. unzip cc034-4_whisker.zip
 4. run run_GLM_session
     
     inputs in the codes are:
