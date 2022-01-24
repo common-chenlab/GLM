@@ -135,7 +135,7 @@ if isempty(master_list) == 0
 
                 [tempout, caughterror] = run_partial_model(tempout, tempX', yt, numLambda, nCV, taskfactor); % run partial model and LLR
                 disp([master_list{kki} ' finish partial model']);
-                tempout.saveloc = [directory,anm,'\GLM_plots\plots',saved_day,'\'];
+                tempout.saveloc = [directory,anm,filesep,'GLM_plots',filesep,'plots',saved_day,filesep];
                 %% store results
                 wreg2{kki} = tempout.wreg2;
                 stats2{kki} = tempout.stats2;
@@ -214,7 +214,7 @@ end
 
 %%
 
-save([directory anm, '\GLM_' session saved_day '.mat'] ,'out', 'all_covariates', 'select_covariates', 'covariates_subidx', 'taskfactor','bigStruct');
+save([directory anm, filesep,'GLM_' session saved_day '.mat'] ,'out', 'all_covariates', 'select_covariates', 'covariates_subidx', 'taskfactor','bigStruct');
 % save([directory anm, '\GLM_' session] ,'covariates','taskfactor','-append');
 
 end
