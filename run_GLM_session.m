@@ -18,6 +18,7 @@ end
 
 
 saved_day = convertStringsToChars(string(datetime('now','TimeZone','local','Format','_MMM_d_y_HH')));
+addpath(genpath(pwd))
 
 
 %% THESE TWO FUNCTIONS NEED TO BE CUSTOMIZED
